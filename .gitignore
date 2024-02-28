@@ -3,3 +3,5 @@
 test/
 node_modules/
 sessions/session/
+edited/*.docx
+.wwebjs_cache/

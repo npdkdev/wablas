@@ -1,7 +1,8 @@
-const { Client, LocalAuth} = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia, MessageSendOptions} = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const { welcome} = require('./lib/vars.js');
 const {cmdCloseNarahubung} = require("./lib/vars");
+const { EditDocx } = require('./lib/functions.js');
 
 const client = new Client({
     authStrategy: new LocalAuth({
@@ -21,8 +22,9 @@ client.on('qr', (qr) => {
     console.log('QR RECEIVED', qr);
 });
 
-client.on('ready', () => {
-    console.log('Client is ready!');
+client.on('ready', async () => {
+    await client.sendMessage('628158806167@c.us', 'test');
+    console.log('Client is ready as ', client.info.phone);
 });
 client.on('message_create', async msg => {
     if (!msg.fromMe && msg.body === '!reset') {
@@ -123,13 +125,26 @@ No. KTP/NIK: *${stateUsers[msg.from].nik}*
 Pekerjaan: *${stateUsers[msg.from].pekerjaan}*
 Alamat: *${stateUsers[msg.from].alamat}*
  
-*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
+*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar Anda akan Diberikan Surat yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
 
 *1. Ya, Sudah Benar*
 *2. Tidak, Belum Benar*`);
             }
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 11) {
                 if (msg.body === '1') {
+                    let output = EditDocx('SKCK.docx', msg.from+'-SKCK.docx', {
+                        fullName: stateUsers[msg.from].nama,
+                        gender: stateUsers[msg.from].jenisKelamin,
+                        ttl: stateUsers[msg.from].tempatLahir+'/'+stateUsers[msg.from].tanggalLahir,
+                        citizen: stateUsers[msg.from].wargaNegara,
+                        religion: stateUsers[msg.from].agama,
+                        status: stateUsers[msg.from].status,
+                        nik: stateUsers[msg.from].nik,
+                        job: stateUsers[msg.from].pekerjaan,
+                        address: stateUsers[msg.from].alamat,
+                    })
+                    let theMedia = MessageMedia.fromFilePath(output);
+                    theMedia.filename = "Surat Pengantar Catatan Kepolisian SKCK.docx";
                     delete stateUsers[msg.from];
                     return await msg.reply(`*Silahkan Datang ke Kantor Desa untuk Mendapatkan Tanda Tangan Serta Nomor pada Surat.*
 
@@ -137,7 +152,7 @@ Alamat: *${stateUsers[msg.from].alamat}*
 *1. KTP Asli*
 *2. KK Asli*
 
-Terima Kasih`);
+Terima Kasih`, undefined, {media: theMedia});
                 } else if (msg.body === '2') {
                     stateUsers[msg.from].step = 1;
                     return await msg.reply('*Siapa Nama Lengkap Anda?*');
@@ -207,13 +222,25 @@ Tempat Tinggal: *${stateUsers[msg.from].tempatTinggal}*
 No. NIK: *${stateUsers[msg.from].nik}*
 No. KK: *${stateUsers[msg.from].kk}*
 
-*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
+*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar Anda akan Diberikan Surat yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
 
 *1. Ya, Sudah Benar*
 *2. Tidak, Belum Benar*`);
             }
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 10) {
                 if (msg.body === '1') {
+                    let output = EditDocx('SPU.docx', msg.from+'-SPU.docx', {
+                        fullName: stateUsers[msg.from].nama,
+                        ttl: stateUsers[msg.from].tempatLahir+'/'+stateUsers[msg.from].tanggalLahir,
+                        citizen: stateUsers[msg.from].wargaNegara,
+                        religion: stateUsers[msg.from].agama,
+                        job: stateUsers[msg.from].pekerjaan,
+                        residence: stateUsers[msg.from].tempatTinggal,
+                        nik: stateUsers[msg.from].nik,
+                        kk: stateUsers[msg.from].kk,
+                    })
+                    let theMedia = MessageMedia.fromFilePath(output);
+                    theMedia.filename = "Surat Pengantar Umum.docx";
                     delete stateUsers[msg.from];
                     return await msg.reply(`*Silahkan Datang ke Kantor Desa untuk Mendapatkan Tanda Tangan Serta Nomor pada Surat.*
                     
@@ -221,7 +248,7 @@ No. KK: *${stateUsers[msg.from].kk}*
 *1. KTP Asli*
 *2. KK Asli*
 
-Terima Kasih`);
+Terima Kasih`, undefined, {media: theMedia});
                 } else if (msg.body === '2') {
                     stateUsers[msg.from].step = 1;
                     return await msg.reply('*Siapa Nama Lengkap Anda?*');
@@ -295,13 +322,25 @@ Tempat Tinggal: *${stateUsers[msg.from].tempatTinggal}*
 No. NIK: *${stateUsers[msg.from].nik}*
 No. KK: *${stateUsers[msg.from].kk}*
 
-*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
+*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar Anda akan Diberikan Surat yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
 
 *1. Ya, Sudah Benar*
 *2. Tidak, Belum Benar*`);
             }
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 10) {
                 if (msg.body === '1') {
+                    let output = EditDocx('SKUMUM.docx', msg.from+'-SKUMUM.docx', {
+                        fullName: stateUsers[msg.from].nama,
+                        ttl: stateUsers[msg.from].tempatLahir+'/'+stateUsers[msg.from].tanggalLahir,
+                        citizen: stateUsers[msg.from].wargaNegara,
+                        religion: stateUsers[msg.from].agama,
+                        job: stateUsers[msg.from].pekerjaan,
+                        residence: stateUsers[msg.from].tempatTinggal,
+                        nik: stateUsers[msg.from].nik,
+                        kk: stateUsers[msg.from].kk,
+                    })
+                    let theMedia = MessageMedia.fromFilePath(output);
+                    theMedia.filename = "Surat Keterangan Umum.docx";
                     delete stateUsers[msg.from];
                     return await msg.reply(`*Silahkan Datang ke Kantor Desa untuk Mendapatkan Tanda Tangan Serta Nomor pada Surat.*
                     
@@ -309,7 +348,7 @@ No. KK: *${stateUsers[msg.from].kk}*
 *1. KTP Asli*
 *2. KK Asli*
 
-Terima Kasih`);
+Terima Kasih`, undefined, {media: theMedia});
                 } else if (msg.body === '2') {
                     stateUsers[msg.from].step = 1;
                     return await msg.reply('*Siapa Nama Lengkap Anda?*');
@@ -385,13 +424,26 @@ No. KTP/NIK: *${stateUsers[msg.from].nik}*
 Pekerjaan: *${stateUsers[msg.from].pekerjaan}*
 Alamat: *${stateUsers[msg.from].alamat}*
 
-*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
+*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar Anda akan Diberikan Surat yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
 
 *1. Ya, Sudah Benar*
 *2. Tidak, Belum Benar*`);
             }
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 11) {
                 if (msg.body === '1') {
+                    let output = EditDocx('SKDTT.docx', msg.from+'-SKDTT.docx', {
+                        fullName: stateUsers[msg.from].nama,
+                        gender: stateUsers[msg.from].jenisKelamin,
+                        binBinti: stateUsers[msg.from].binBinti,
+                        ttl: stateUsers[msg.from].tempatLahir+'/'+stateUsers[msg.from].tanggalLahir,
+                        religion: stateUsers[msg.from].agama,
+                        citizen: stateUsers[msg.from].wargaNegara,
+                        nik: stateUsers[msg.from].nik,
+                        job: stateUsers[msg.from].pekerjaan,
+                        address: stateUsers[msg.from].alamat,
+                    })
+                    let theMedia = MessageMedia.fromFilePath(output);
+                    theMedia.filename = "Surat Keterangan Domisili Tempat Tinggal.docx";
                     delete stateUsers[msg.from];
                     return await msg.reply(`*Silahkan Datang ke Kantor Desa untuk Mendapatkan Tanda Tangan Serta Nomor pada Surat.*
                     
@@ -399,7 +451,7 @@ Alamat: *${stateUsers[msg.from].alamat}*
 *1. KTP Asli*
 *2. KK Asli*
 
-Terima Kasih`);
+Terima Kasih`, undefined, {media: theMedia});
                 } else if (msg.body === '2') {
                     stateUsers[msg.from].step = 1;
                     return await msg.reply('*Siapa Nama Lengkap Anda?*');
@@ -446,7 +498,7 @@ Terima Kasih`);
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 7) {
                 stateUsers[msg.from].step = 8;
                 stateUsers[msg.from].nik = msg.body;
-                return await msg.reply('*Apa Pekerjaan Anda!*');
+                return await msg.reply('*Apa Pekerjaan Anda?*');
             }
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 8) {
                 stateUsers[msg.from].step = 9;
@@ -468,13 +520,25 @@ No. KTP/NIK: *${stateUsers[msg.from].nik}*
 Pekerjaan: *${stateUsers[msg.from].pekerjaan}*
 Alamat: *${stateUsers[msg.from].alamat}*
 
-*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
+*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar Anda akan Diberikan Surat yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
 
 *1. Ya, Sudah Benar*
 *2. Tidak, Belum Benar*`);
             }
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 10) {
                 if (msg.body === '1') {
+                    let output = EditDocx('SKTM.docx', msg.from+'-SKTM.docx', {
+                        fullName: stateUsers[msg.from].nama,
+                        gender: stateUsers[msg.from].jenisKelamin,
+                        ttl: stateUsers[msg.from].tempatLahir+'/'+stateUsers[msg.from].tanggalLahir,
+                        citizen: stateUsers[msg.from].wargaNegara,
+                        religion: stateUsers[msg.from].agama,
+                        nik: stateUsers[msg.from].nik,
+                        job: stateUsers[msg.from].pekerjaan,
+                        address: stateUsers[msg.from].alamat,
+                    })
+                    let theMedia = MessageMedia.fromFilePath(output);
+                    theMedia.filename = "Surat Keterangan Tidak Mampu.docx";
                     delete stateUsers[msg.from];
                     return await msg.reply(`*Silahkan Datang ke Kantor Desa untuk Mendapatkan Tanda Tangan Serta Nomor pada Surat.*
                     
@@ -482,7 +546,7 @@ Alamat: *${stateUsers[msg.from].alamat}*
 *1. KTP Asli*
 *2. KK Asli*
 
-Terima Kasih`);
+Terima Kasih`, undefined, {media: theMedia});
                 } else if (msg.body === '2') {
                     stateUsers[msg.from].step = 1;
                     return await msg.reply('*Siapa Nama Lengkap Anda?*');
@@ -524,7 +588,7 @@ Terima Kasih`);
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 6) {
                 stateUsers[msg.from].step = 7;
                 stateUsers[msg.from].nik = msg.body;
-                return await msg.reply('*Apa Pekerjaan Anda!*');
+                return await msg.reply('*Apa Pekerjaan Anda?*');
             }
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 7) {
                 stateUsers[msg.from].step = 8;
@@ -541,18 +605,29 @@ Berikut Merupakan Data yang Sudah Anda Isi.
 Nama Lengkap: *${stateUsers[msg.from].nama}*
 Jenis Kelamin: *${stateUsers[msg.from].jenisKelamin}*
 Tempat/Tanggal Lahir: *${stateUsers[msg.from].tempatLahir}/${stateUsers[msg.from].tanggalLahir}*
-Kewarganegaraan: *${stateUsers[msg.from].wargaNegara}/${stateUsers[msg.from].agama}*
+Kewarganegaraan: *${stateUsers[msg.from].wargaNegara}*
 No. KTP/NIK: *${stateUsers[msg.from].nik}*
 Pekerjaan: *${stateUsers[msg.from].pekerjaan}*
 Alamat: *${stateUsers[msg.from].alamat}*
 
-*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
+*Apakah Rekapitulasi Tersebut Sudah Sesuai dengan Data Anda yang Sebenarnya dan Sejujurnya? Jika Sudah Benar Anda akan Diberikan Surat yang Berbentuk Dokumen, Sedangkan Jika Belum akan Mengulangi Pertanyaan dari Awal*
 
 *1. Ya, Sudah Benar*
 *2. Tidak, Belum Benar*`);
             }
             if (stateUsers[msg.from].step && stateUsers[msg.from].step === 9) {
                 if (msg.body === '1') {
+                    let output = EditDocx('SKUSAHA.docx', msg.from+'-SKUSAHA.docx', {
+                        fullName: stateUsers[msg.from].nama,
+                        gender: stateUsers[msg.from].jenisKelamin,
+                        ttl: stateUsers[msg.from].tempatLahir+'/'+stateUsers[msg.from].tanggalLahir,
+                        citizen: stateUsers[msg.from].wargaNegara,
+                        nik: stateUsers[msg.from].nik,
+                        job: stateUsers[msg.from].pekerjaan,
+                        address: stateUsers[msg.from].alamat,
+                    })
+                    let theMedia = MessageMedia.fromFilePath(output);
+                    theMedia.filename = "Surat Keterangan Usaha.docx";
                     delete stateUsers[msg.from];
                     return await msg.reply(`*Silahkan Datang ke Kantor Desa untuk Mendapatkan Tanda Tangan Serta Nomor pada Surat.*
 
@@ -560,7 +635,7 @@ Alamat: *${stateUsers[msg.from].alamat}*
 *1. KTP Asli*
 *2. KK Asli*
 
-Terima Kasih`);
+Terima Kasih`, undefined, {media: theMedia});
                 } else if (msg.body === '2') {
                     stateUsers[msg.from].step = 1;
                     return await msg.reply('*Siapa Nama Lengkap Anda?*');
