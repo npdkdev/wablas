@@ -13,6 +13,7 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "docxtemplater": "^3.46.0",
+    "docxtemplater-image-module": "^3.1.0",
     "pizzip": "^3.1.6",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.23.0"

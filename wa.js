@@ -23,7 +23,7 @@ client.on('qr', (qr) => {
 });
 
 client.on('ready', async () => {
-    await client.sendMessage('628158806167@c.us', 'test');
+    //await client.sendMessage('628158806167@c.us', 'test');
     console.log('Client is ready as ', client.info.phone);
 });
 client.on('message_create', async msg => {
